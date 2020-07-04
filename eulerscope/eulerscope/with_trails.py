@@ -1,6 +1,9 @@
 import re
 import sys
 import time
+from datetime import datetime
+
+import stdin_buffer_handler
 
 import math
 
@@ -10,13 +13,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from eulerscope.lines3d_demo import plot_roll, plot_pitch, plot_yaw
-from eulerscope.gumball import plot_gumball_with_rpy
-
-import stdin_buffer_handler
+from eulerscope.gumball import plot_gumball_with_rpy, plot_gumball_with_rpy_with_old
 
 #                  example: "$EULV,x,45.8750,y,-27.1250,z,-165.0000"
 euler_pattern = re.compile("^\$EULV,x,([0-9.-]+),y,([0-9.-]+),z,([0-9.-]+)$")
-
 
 def monitor_imu():
     plt.ion()
@@ -27,7 +27,16 @@ def monitor_imu():
     ax.set_zlim(-1, 1)
     plt.draw()
 
+    roll = []
+    pitch = []
+    yaw = []
+
+    history = 2
+
     while True:
+        # Throttle.
+        next_iteration_earliest_allowed_start = time.time() + loop_minimum_seconds
+
         ### 
         ## READ FROM STDIN
         ###
@@ -36,20 +45,32 @@ def monitor_imu():
         if line:
             match = euler_pattern.match(line)
             if match:
-                print(match.groups())
+                print('[{}]: {}'.format(datetime.now(), match.groups()))
                 a, b, c = match.groups()
                 try:
-                    roll, pitch, yaw = math.radians(float(a)), math.radians(float(b)), math.radians(float(c))
+                    r, p, y = math.radians(float(a)), math.radians(float(b)), math.radians(float(c))
                 except ValueError:
                     # bad parse move on
                     continue
 
+                if len(roll) >= history:
+                    while len(roll) > history:
+                        roll.pop(0)
+                        pitch.pop(0)
+                        yaw.pop(0)
+
+                roll.append(r)
+                pitch.append(p)
+                yaw.append(y)
+
+                if len(roll) <= 1:
+                    continue
                 #####
                 ###   UPDATE PLOT
                 #####
-
+                
                 ax.clear()
-                plot_gumball_with_rpy(ax, roll=roll, pitch=pitch, yaw=yaw)
+                plot_gumball_with_rpy_with_old(ax, roll=roll, pitch=pitch, yaw=yaw)
 
                 ax.set_xlim(-1, 1)
                 ax.set_ylim(-1, 1)
@@ -58,7 +79,6 @@ def monitor_imu():
                 #####
                 ###   UPDATE PLOT
                 #####
-
         plt.pause(0.00000000001)
 
 def main():
@@ -66,4 +86,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit()

@@ -6,11 +6,11 @@ from collections import namedtuple
 import numpy as np
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d.proj3d import proj_transform
 import numpy as np
 import matplotlib.pyplot as plt
 
-angles = np.linspace(0, 2 * np.pi, 100)
-
+angles = np.linspace(0, 2 * np.pi, 30)
 
 """
 z = forward/back
@@ -42,9 +42,9 @@ blue_circle = XYZ_Points(
 )
 
 red_line = XYZ_Points(
-    z = [0, 0],
+    z = [   0,   0],
     x = [-0.5, 0.5],
-    y = [0, 0],
+    y = [   0,   0],
     color = "red",
 )
 
@@ -55,12 +55,43 @@ green_line = XYZ_Points(
     color = "green",
 )
 
+green_arrow = XYZ_Points(
+    z = [0, 0.5],
+    x = [0, 0],
+    y = [0, 0],
+    color = "green",    
+)
+
 blue_line = XYZ_Points(
     z = [0, 0],
     x = [0, 0],
     y = [0, 1],
     color = "blue",
 )
+
+from matplotlib.patches import FancyArrowPatch
+
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, x, y, z, dx, dy, dz, *args, **kwargs):
+        super().__init__((0,0), (0,0), *args, **kwargs)
+        self._xyz = (x,y,z)
+        self._dxdydz = (dx,dy,dz)
+
+    def draw(self, renderer):
+        x1,y1,z1 = self._xyz
+        dx,dy,dz = self._dxdydz
+        x2,y2,z2 = (x1+dx,y1+dy,z1+dz)
+
+        xs, ys, zs = proj_transform((x1,x2),(y1,y2),(z1,z2), renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        super().draw(renderer)
+
+def _arrow3D(ax, x, y, z, dx, dy, dz, *args, **kwargs):
+    '''Add an 3d arrow to an `Axes3D` instance.'''
+    arrow = Arrow3D(x, y, z, dx, dy, dz, *args, **kwargs)
+    ax.add_artist(arrow)
+
+setattr(Axes3D,'arrow3D',_arrow3D)
 
 # Worked well-ish with matrixes ordered roll, pitch, yaw
 def __apply_roll_pitch_yaw(items, roll=0, pitch=0, yaw=0):
@@ -111,16 +142,36 @@ def _apply_roll_pitch_yaw(items, roll=0, pitch=0, yaw=0):
 items = [red_circle, green_circle, blue_circle,
          red_line, green_line, blue_line] 
 
-
 def plot_gumball(ax):
     for item in items:
         ax.plot(item.x, item.z, item.y, color=item.color)
 
-
-def plot_gumball_with_rpy(ax, roll, pitch, yaw):
-    transformed_items = apply_roll_pitch_yaw(items, roll=roll, pitch=pitch, yaw=yaw)
+def plot_gumball_with_rpy(ax, roll, pitch, yaw, alpha=1.0):
+    transformed_green_arrow = apply_roll_pitch_yaw([green_arrow], roll=yaw, pitch=pitch, yaw=roll)[0]
+    tga = transformed_green_arrow
+    ax.arrow3D(tga.x[0], tga.z[0], tga.y[0],
+               tga.x[1]-tga.x[0], tga.z[1]-tga.z[0], tga.y[1]-tga.y[0],
+               # alpha=0.5,
+               mutation_scale=35,
+               ec ='black',
+               fc='green')
+    #
+    #   Roll and Yaw need to be swapped!
+    #
+    transformed_items = apply_roll_pitch_yaw(items, roll=yaw, pitch=pitch, yaw=roll)
     for item in transformed_items:
-        ax.plot(item.x, item.z, item.y, color=item.color)
+        ax.plot(item.x, item.z, item.y, color=item.color, alpha=alpha)
+
+def plot_gumball_with_rpy_with_old(ax, roll, pitch, yaw):
+    assert len(roll) == len(pitch) == len(yaw)
+    alpha_vals = list(np.linspace(0.1, 1.0, len(roll)))
+
+    i = 0
+    for j in range(0, len(roll)):
+        plot_gumball_with_rpy(ax, roll[j], pitch[j], yaw[j], alpha_vals[i])
+        i += 1
+        if len(alpha_vals) <= i:
+            i = 0
 
 
 if __name__ == "__main__":

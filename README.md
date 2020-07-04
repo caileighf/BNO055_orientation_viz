@@ -10,3 +10,6 @@
 	`$ export PYTHONPATH=$PYTHONPATH:. `
 4. run e.g.  
 	`$ cat example.log | python eulerscope/main.py`
+
+Run interactive (with roll, pitch, yaw values entered in the terminal manually)
+	`$ python eulerscope/main.py`
