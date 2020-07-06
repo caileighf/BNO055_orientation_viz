@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 from eulerscope.lines3d_demo import plot_roll, plot_pitch, plot_yaw
 from eulerscope.gumball import plot_gumball_with_rpy, plot_gumball_with_rpy_with_old
 
-#                  example: "$EULV,x,45.8750,y,-27.1250,z,-165.0000"
-euler_pattern = re.compile("^\$EULV,x,([0-9.-]+),y,([0-9.-]+),z,([0-9.-]+)$")
+#                  example: "$EULV,x_yaw,0.0000,y_pitch,-25.3750,z_roll,-30.8750"
+euler_pattern = re.compile("^\$EULV,x_yaw,([0-9.-]+),y_pitch,([0-9.-]+),z_roll,([0-9.-]+)$")
 
 def monitor_imu():
     plt.ion()
@@ -34,9 +34,6 @@ def monitor_imu():
     history = 2
 
     while True:
-        # Throttle.
-        next_iteration_earliest_allowed_start = time.time() + loop_minimum_seconds
-
         ### 
         ## READ FROM STDIN
         ###

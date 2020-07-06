@@ -14,8 +14,8 @@ from eulerscope.gumball import plot_gumball_with_rpy
 
 import stdin_buffer_handler
 
-#                  example: "$EULV,x,45.8750,y,-27.1250,z,-165.0000"
-euler_pattern = re.compile("^\$EULV,x,([0-9.-]+),y,([0-9.-]+),z,([0-9.-]+)$")
+#                  example: "$EULV,x_yaw,0.0000,y_pitch,-25.3750,z_roll,-30.8750"
+euler_pattern = re.compile("^\$EULV,x_yaw,([0-9.-]+),y_pitch,([0-9.-]+),z_roll,([0-9.-]+)$")
 
 
 def monitor_imu():
