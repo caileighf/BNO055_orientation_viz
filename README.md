@@ -1,5 +1,7 @@
 # BNO055_orientation_viz
 
+
+
 1. make a virtualenv and activate it
 	`$ virtualenv -p python3 /<path-to-venv>/BNO_ENV`
 	`$ source /<path-to-venv>/BNO_ENV/bin/activate`
@@ -13,3 +15,4 @@
 
 Run interactive (with roll, pitch, yaw values entered in the terminal manually)
 	`$ python eulerscope/main.py`
+
