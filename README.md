@@ -1,6 +1,9 @@
 # BNO055_orientation_viz
 
-
+<p float="left">
+  <img src="resources/with_trails.gif" width="425" />
+  <img src="resources/main.gif" width="425" /> 
+</p>
 
 1. make a virtualenv and activate it
 	`$ virtualenv -p python3 /<path-to-venv>/BNO_ENV`
@@ -15,4 +18,3 @@
 
 Run interactive (with roll, pitch, yaw values entered in the terminal manually)
 	`$ python eulerscope/main.py`
-
